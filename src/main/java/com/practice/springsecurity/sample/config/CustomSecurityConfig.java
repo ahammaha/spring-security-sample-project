@@ -1,5 +1,8 @@
 package com.practice.springsecurity.sample.config;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,24 +14,18 @@ import org.springframework.security.core.userdetails.User.UserBuilder;
 @Configuration
 @EnableWebSecurity
 public class CustomSecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	// add a reference to our security data source
+	@Autowired
+	private DataSource securityDataSource;
 
 	/*
 	 * Configure users (in memory, database, ldap, etc)
 	 */
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-
-		// add our users for in memory authentication
-		
-		UserBuilder users = User.withDefaultPasswordEncoder();
-		
-		// By default spring security prefixes mentioned roles by ROLES_ ie. ROLES_ADMIN, ROLES_MANAGER
-		// we can give any role names and any number of roles
-		auth.inMemoryAuthentication()
-			.withUser(users.username("user1").password("pwd").roles("EMPLOYEE","ADMIN"))
-			.withUser(users.username("user2").password("pwd").roles("EMPLOYEE","MANAGER"))
-			.withUser(users.username("user3").password("pwd").roles("EMPLOYEE"))
-			.withUser(users.username("user4").password("pwd").roles("EMPLOYEE","MANAGER"));
+		// use jdbc authentication
+		auth.jdbcAuthentication().dataSource(securityDataSource);
 	}
 	
 	/*
